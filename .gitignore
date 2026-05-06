@@ -22,8 +22,12 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 ENV/
+
+# Python version management
+.python-version
 
 # Environment variables
 .env
@@ -48,3 +52,9 @@ ENV/
 screenshots/
 results/
 .claude/
+.specs
+prd.md
+docs/
+.github/
+.agents/
+eval/
