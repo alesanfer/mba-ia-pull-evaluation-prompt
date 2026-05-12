@@ -24,7 +24,6 @@ from typing import List, Dict, Any
 from pathlib import Path
 from dotenv import load_dotenv
 from langsmith import Client
-from langchain import hub
 from langchain_core.prompts import ChatPromptTemplate
 from utils import check_env_vars, format_score, print_section_header, get_llm as get_configured_llm
 from metrics import evaluate_f1_score, evaluate_clarity, evaluate_precision
@@ -105,7 +104,8 @@ def create_evaluation_dataset(client: Client, dataset_name: str, jsonl_path: str
 def pull_prompt_from_langsmith(prompt_name: str) -> ChatPromptTemplate:
     try:
         print(f"   Puxando prompt do LangSmith Hub: {prompt_name}")
-        prompt = hub.pull(prompt_name)
+        client = Client()
+        prompt = client.pull_prompt(prompt_name)
         print(f"   ✓ Prompt carregado com sucesso")
         return prompt
 
@@ -244,11 +244,11 @@ def display_results(prompt_name: str, scores: Dict[str, float]) -> bool:
     print(f"Prompt: {prompt_name}")
     print("=" * 50)
 
-    print("\nMétricas LangSmith:")
+    print("\nMétricas Derivadas:")
     print(f"  - Helpfulness: {format_score(scores['helpfulness'], threshold=0.9)}")
     print(f"  - Correctness: {format_score(scores['correctness'], threshold=0.9)}")
 
-    print("\nMétricas Customizadas:")
+    print("\nMétricas Base:")
     print(f"  - F1-Score: {format_score(scores['f1_score'], threshold=0.9)}")
     print(f"  - Clarity: {format_score(scores['clarity'], threshold=0.9)}")
     print(f"  - Precision: {format_score(scores['precision'], threshold=0.9)}")
@@ -259,12 +259,16 @@ def display_results(prompt_name: str, scores: Dict[str, float]) -> bool:
     print(f"📊 MÉDIA GERAL: {average_score:.4f}")
     print("-" * 50)
 
-    passed = average_score >= 0.9
+    all_above_threshold = all(score >= 0.9 for score in scores.values())
+    passed = all_above_threshold and average_score >= 0.9
 
     if passed:
-        print(f"\n✅ STATUS: APROVADO (média >= 0.9)")
+        print(f"\n✅ STATUS: APROVADO - Todas as métricas >= 0.9")
     else:
-        print(f"\n❌ STATUS: REPROVADO (média < 0.9)")
+        print(f"\n❌ STATUS: REPROVADO")
+        failed_metrics = [name for name, score in scores.items() if score < 0.9]
+        if failed_metrics:
+            print(f"⚠️  Métricas abaixo de 0.9: {', '.join(failed_metrics)}")
         print(f"⚠️  Média atual: {average_score:.4f} | Necessário: 0.9000")
 
     return passed
@@ -310,8 +314,14 @@ def main():
     print("Certifique-se de ter feito push dos prompts antes de avaliar:")
     print("  python src/push_prompts.py\n")
 
+    username = os.getenv("USERNAME_LANGSMITH_HUB", "")
+    if not username:
+        print("❌ USERNAME_LANGSMITH_HUB não configurada no .env")
+        print("   Configure seu username do LangSmith Hub antes de continuar.")
+        return 1
+
     prompts_to_evaluate = [
-        "bug_to_user_story_v2",
+        f"{username}/bug_to_user_story_v2",
     ]
 
     all_passed = True
