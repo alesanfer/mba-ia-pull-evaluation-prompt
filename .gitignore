@@ -49,7 +49,6 @@ ENV/
 *.log
 
 # Project specific
-screenshots/
 results/
 .claude/
 .specs
