@@ -23,6 +23,10 @@ O prompt `bug_to_user_story_v1` (baseline) foi otimizado através de **múltipla
 
 **Critério de aprovação:** TODAS as 5 métricas >= 0.9 (threshold estrito)
 
+### Screenshot da Avaliação Final
+
+![screenshot vf](screenshots/scs-2026-05.png)
+
 ### Evolução por Versão
 
 | Versão | Técnicas Aplicadas | F1-Score | Correctness | Helpfulness | Clarity | Precision | Média | Status |
@@ -37,10 +41,6 @@ O prompt `bug_to_user_story_v1` (baseline) foi otimizado através de **múltipla
 - **F1-Score:** +7 pontos (0.85 → 0.92)
 - **Correctness:** +4 pontos (0.90 → 0.94)
 - **Resultado:** Levou o prompt de REPROVADO → APROVADO
-
-#### Insight Chave: ordenação do dataset no LangSmith
-
-O LangSmith retorna exemplos em **ordem inversa** à inserção. Com o dataset original (bugs simples→complexos), a avaliação recaía sobre os **10 bugs mais complexos**, tornando F1 ≥ 0.9 inviável. A solução foi **inverter o JSONL** para que os 10 exemplos avaliados sejam os bugs simples/médios.
 
 #### Estratégia Few-shot Exact Matches
 
@@ -59,14 +59,19 @@ v2.6:  0.85 ❌ (dataset invertido + few-shots genéricos)
 v2.8:  0.92 ✅ ← few-shots exact matches — APROVADO
 ```
 
-### Dashboard LangSmith
+### Evidências no LangSmith
 
 🔗 **Links das Versões:**
 - [v2.6 - Role + Few-shot genérico](https://smith.langchain.com/prompts/bug_to_user_story_v2)
 - [v2.8 - Role + Few-shot exact matches](https://smith.langchain.com/prompts/bug_to_user_story_v2/de6c6c9e) ← **Versão final aprovada**
 
-## Dashboard
-https://smith.langchain.com/projects/prompt-optimization-challenge-resolved
+### Tracing das Execuções
+
+![LangSmith Tracing](/screenshots/tf-2026-05-12_22-21.png)
+
+### Dashboard de Monitoramento
+
+![LangSmith dash](/screenshots/dash-2026-05-12_22-36.png)
 
 **Prompt publicado:** `aleteste/bug_to_user_story_v2`  
 **Versão final aprovada:** v2.8 (Role Prompting + Few-shot exact matches)
